@@ -103,14 +103,16 @@ print(testmetlist)
 #     print(j)
 #     print(testmetlist)
 
-# this was my best model
-rfmodel = RandomForestRegressor(max_depth=7, n_estimators=50)
+
 # this was the full mode
+rfmodel = RandomForestRegressor(max_depth=7, n_estimators=50)
 fullmet, indmets1, pred1, rf = crossv(rfmodel, train_test_X)
 # this one used only the house low and high estimates
-exmet, indmets2, pred2, rfex = crossv(rfmodel, train_test_X_est)
+rfexmodel = RandomForestRegressor(max_depth=7, n_estimators=50)
+exmet, indmets2, pred2, rfex = crossv(rfexmodel, train_test_X_est)
 # this one used all variables except house estimates
-noexmet, indmets3, pred3, rfnex = crossv(rfmodel, train_test_X_noest)
+rfnexmodel = RandomForestRegressor(max_depth=7, n_estimators=50)
+noexmet, indmets3, pred3, rfnex = crossv(rfnexmodel, train_test_X_noest)
 
 print(fullmet)
 print(exmet)
@@ -122,8 +124,8 @@ print(noexmet)
 # this is me trying to work on exporting the predictions for graphs in tableau
 
 
-def get_valid_est(index, predictions):
-    y_val, diff, ret_val = train_test_Y[index], 10**12, -1
+def get_valid_est(index, predictions, expected):
+    y_val, diff, ret_val = expected[index], 10**12, -1
 
     for j in range(len(predictions)):
         if index < len(predictions[j]) and abs(y_val - predictions[j][index]) < diff:
@@ -135,18 +137,48 @@ def get_valid_est(index, predictions):
 
 baselinepreddf = pd.DataFrame(data=predlist)
 
-noestimatespreddf = pd.DataFrame(data=[get_valid_est(i, pred3) for i in range(len(pred3[0]))])
-noestimatespreddf.index = noestimatespreddf.index + 1
+noestimatespreddf = pd.DataFrame(data=[get_valid_est(i, pred3, train_test_Y) for i in range(len(pred3[0]))])
+noestimatespreddf.index = noestimatespreddf.index
 noestimatespreddf.to_csv(path_or_buf='data/NoEstimatesModelBestPredictions.csv')
 
-onlyestimatespreddf = pd.DataFrame(data=[get_valid_est(i, pred2) for i in range(len(pred2[0]))])
-onlyestimatespreddf.index = onlyestimatespreddf.index + 1
+onlyestimatespreddf = pd.DataFrame(data=[get_valid_est(i, pred2, train_test_Y) for i in range(len(pred2[0]))])
+onlyestimatespreddf.index = onlyestimatespreddf.index
 onlyestimatespreddf.to_csv(path_or_buf='data/OnlyEstimatesModelBestPredictions.csv')
 
-fullmodelpreddf = pd.DataFrame(data=[get_valid_est(i, pred1) for i in range(len(pred1[0]))])
-fullmodelpreddf.index = fullmodelpreddf.index + 1
+fullmodelpreddf = pd.DataFrame(data=[get_valid_est(i, pred1, train_test_Y) for i in range(len(pred1[0]))])
+fullmodelpreddf.index = fullmodelpreddf.index
 fullmodelpreddf.to_csv(path_or_buf='data/FullModelBestPredictions.csv')
 
+
+def holdout_predict(model, ttX):
+    predlist, testmetlist = [], []
+
+    curpred = model.predict(ttX)
+    testmetric = np.mean(np.sqrt((holdout_Y-curpred) * (holdout_Y-curpred))/holdout_Y)
+
+    predlist.append(curpred)
+    testmetlist.append(testmetric)
+
+    return testmetlist, predlist
+
+
+holdout_testmet, holdout_pred = holdout_predict(rf, holdout_X)
+
+
+def get_holdout_est(index, predictions, expected):
+    y_val, diff, ret_val = expected[index+710], 10**12, -1
+
+    for j in range(len(predictions)):
+        if index < len(predictions[j]) and abs(y_val - predictions[j][index]) < diff:
+            diff = abs(y_val - predictions[j][index])
+            ret_val = predictions[j][index]
+
+    return ret_val
+
+
+holdout_est_df = pd.DataFrame(data=[get_holdout_est(i, holdout_pred, holdout_Y) for i in range(len(holdout_pred[0]))])
+holdout_est_df.index = holdout_est_df.index + 710
+holdout_est_df.to_csv(path_or_buf='data/HoldoutEstimatesBestPredictions.csv')
 
 
 
