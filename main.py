@@ -42,13 +42,13 @@ corrwprice = train_test.corr()['sale_price']
 # doing this because don't want to use training data after (timewise) test data cuz were forecasting
 
 train1 = list(range(138))
-test1 = list(range(138, HOLDOUT_OFFSET))
+test1 = list(range(138, HOLDOUT_OFFSET+1))
 train2 = list(range(276))
-test2 = list(range(276, HOLDOUT_OFFSET))
+test2 = list(range(276, HOLDOUT_OFFSET+1))
 train3 = list(range(436))
-test3 = list(range(436, HOLDOUT_OFFSET))
+test3 = list(range(436, HOLDOUT_OFFSET+1))
 train4 = list(range(570))
-test4 = list(range(570, HOLDOUT_OFFSET))
+test4 = list(range(570, HOLDOUT_OFFSET+1))
 trainind = [train1, train2, train3, train4]
 testind = [test1, test2, test3, test4]
 
