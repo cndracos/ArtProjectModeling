@@ -138,15 +138,12 @@ def get_valid_est(index, predictions, expected):
 baselinepreddf = pd.DataFrame(data=predlist)
 
 noestimatespreddf = pd.DataFrame(data=[get_valid_est(i, pred3, train_test_Y) for i in range(len(pred3[0]))])
-noestimatespreddf.index = noestimatespreddf.index
 noestimatespreddf.to_csv(path_or_buf='data/NoEstimatesModelBestPredictions.csv')
 
 onlyestimatespreddf = pd.DataFrame(data=[get_valid_est(i, pred2, train_test_Y) for i in range(len(pred2[0]))])
-onlyestimatespreddf.index = onlyestimatespreddf.index
 onlyestimatespreddf.to_csv(path_or_buf='data/OnlyEstimatesModelBestPredictions.csv')
 
 fullmodelpreddf = pd.DataFrame(data=[get_valid_est(i, pred1, train_test_Y) for i in range(len(pred1[0]))])
-fullmodelpreddf.index = fullmodelpreddf.index
 fullmodelpreddf.to_csv(path_or_buf='data/FullModelBestPredictions.csv')
 
 
