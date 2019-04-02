@@ -27,11 +27,11 @@ from sklearn.ensemble import GradientBoostingRegressor
 # data.to_csv('~/PycharmProjects/ArtProjectModeling/data/EncodedSothebyEveningContemporaryAuctionData.csv')
 
 data = pd.read_csv('/Users/charliedracos/Downloads/ArtProjectModeling/data/EncodedSothebyEveningContemporaryAuctionData.csv', index_col=0)
-
+HOULDOUT_OFFSET, TOTAL_N = 710, 758
 
 # split into train/test and holdout
-holdout = data.iloc[710:758, :]
-train_test = data.iloc[0:711, :]
+holdout = data.iloc[HOLDOUT_OFFSET:TOTAL_N, :]
+train_test = data.iloc[0:HOLDOUT_OFFSET+1, :]
 
 # exploratory analysis - prob should do more of this
 corrwprice = train_test.corr()['sale_price']
@@ -42,13 +42,13 @@ corrwprice = train_test.corr()['sale_price']
 # doing this because don't want to use training data after (timewise) test data cuz were forecasting
 
 train1 = list(range(138))
-test1 = list(range(138, 711))
+test1 = list(range(138, HOLDOUT_OFFSET))
 train2 = list(range(276))
-test2 = list(range(276, 711))
+test2 = list(range(276, HOLDOUT_OFFSET))
 train3 = list(range(436))
-test3 = list(range(436, 711))
+test3 = list(range(436, HOLDOUT_OFFSET))
 train4 = list(range(570))
-test4 = list(range(570, 711))
+test4 = list(range(570, HOLDOUT_OFFSET))
 trainind = [train1, train2, train3, train4]
 testind = [test1, test2, test3, test4]
 
@@ -161,20 +161,8 @@ def holdout_predict(model, ttX):
 
 holdout_testmet, holdout_pred = holdout_predict(rf, holdout_X)
 
-
-def get_holdout_est(index, predictions, expected):
-    y_val, diff, ret_val = expected[index+710], 10**12, -1
-
-    for j in range(len(predictions)):
-        if index < len(predictions[j]) and abs(y_val - predictions[j][index]) < diff:
-            diff = abs(y_val - predictions[j][index])
-            ret_val = predictions[j][index]
-
-    return ret_val
-
-
-holdout_est_df = pd.DataFrame(data=[get_holdout_est(i, holdout_pred, holdout_Y) for i in range(len(holdout_pred[0]))])
-holdout_est_df.index = holdout_est_df.index + 710
+holdout_est_df = pd.DataFrame(data=[get_valid_est(i+HOLDOUT_OFFSET, holdout_pred, holdout_Y) for i in range(len(holdout_pred[0]))])
+holdout_est_df.index = holdout_est_df.index + HOLDOUT_OFFSET
 holdout_est_df.to_csv(path_or_buf='data/HoldoutEstimatesBestPredictions.csv')
 
 
